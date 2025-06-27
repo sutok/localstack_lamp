@@ -1,0 +1,47 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "28080:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./app:/var/www/html
+    depends_on:
+      - php
+
+  php:
+    image: amazonlinux:2
+    container_name: php
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - mysql
+    env_file:
+      - .env.development
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    env_file:
+      - .env.development
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/conf.d:/etc/mysql/conf.d
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    env_file:
+      - .env.development
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./localstack/data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
