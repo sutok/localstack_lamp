@@ -1,9 +1,35 @@
 FROM amazonlinux:2
 
-RUN yum update -y \
-    && amazon-linux-extras enable php8.2 \
-    && yum clean metadata \
-    && yum install -y php php-cli php-fpm php-mbstring php-xml php-mysqlnd php-pdo php-gd php-json php-curl php-zip php-opcache php-devel php-pecl-apcu php-pecl-redis php-intl php-bcmath php-dom php-fileinfo php-tokenizer php-ctype php-session php-simplexml php-xmlwriter php-xmlreader php-phar php-posix php-sockets php-exif php-iconv php-gmp php-pcntl php-soap php-pear php-process php-ldap php-pecl-xdebug \
-    && yum clean all
+RUN yum update -y && \
+    amazon-linux-extras enable php8.2 && \
+    yum install -y php php-fpm php-cli php-mbstring php-xml php-pdo php-devel php-pear make gcc unzip git && \
+    yum clean all \
+    && sed -i 's|^listen = .*|listen = 9000|' /etc/php-fpm.d/www.conf \
+    && sed -i 's|^\(listen.allowed_clients\)|;\1|' /etc/php-fpm.d/www.conf
 
-CMD ["php-fpm", "-F"] 
+# Xdebug 3 インストール
+RUN pecl install xdebug-3.2.2 && \
+    echo "zend_extension=$(find /usr/lib64/php/modules/ -name xdebug.so)" > /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.mode=debug" >> /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.start_with_request=yes" >> /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.client_host=host.docker.internal" >> /etc/php.d/15-xdebug.ini
+
+# Composer インストール
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/html
+
+# COPY ../src .
+
+# RUN composer install
+
+# PHP-FPM 設定 (UNIX ソケット用)
+# RUN sed -i '/^listen = .*/{s/^/;/;a\
+# listen = 9000\
+# }' /etc/php-fpm.d/www.conf && \
+#     sed -i 's|^;listen.owner = nobody|listen.owner = nginx|' /etc/php-fpm.d/www.conf && \
+#     sed -i 's|^;listen.group = nobody|listen.group = nginx|' /etc/php-fpm.d/www.conf
+
+EXPOSE 80
+
+CMD ["php-fpm", "-F"]

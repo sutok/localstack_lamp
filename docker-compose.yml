@@ -1,47 +1,53 @@
-services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "28080:80"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./app:/var/www/html
-    depends_on:
-      - php
+# version: "3.8"
 
-  php:
-    image: amazonlinux:2
-    container_name: php
+services:
+  app1:
     build:
       context: ./php
-      dockerfile: Dockerfile
     volumes:
-      - ./app:/var/www/html
-    working_dir: /var/www/html
-    depends_on:
-      - mysql
+      - ./src:/var/www/html
     env_file:
       - .env.development
+    depends_on:
+      - db
+      - localstack
+    networks:
+      - app-network
 
-  mysql:
+  db:
     image: mysql:8.0
-    container_name: mysql
     env_file:
       - .env.development
     ports:
       - "3306:3306"
     volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/conf.d:/etc/mysql/conf.d
+      - data:/var/lib/mysql
+    networks:
+      - app-network
 
   localstack:
-    image: localstack/localstack:latest
-    container_name: localstack
-    env_file:
-      - .env.development
+    image: localstack/localstack
+    environment:
+      - SERVICES=s3
     ports:
       - "4566:4566"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "28080:80"
     volumes:
-      - ./localstack/data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./src1:/var/www/html
+    depends_on:
+      - app1
+    networks:
+      - app-network
+
+volumes:
+  data:
+
+networks:
+  app-network:
