@@ -73,6 +73,22 @@ if (isset($_GET['download'])) {
         $msg = 'ダウンロード失敗: ' . $e->getMessage();
     }
 }
+
+// 削除処理
+if (isset($_POST['delete_key'])) {
+    try {
+        $s3->deleteObject([
+            'Bucket' => $bucket,
+            'Key'    => $_POST['delete_key'],
+        ]);
+        echo "削除成功: " . htmlspecialchars($_POST['delete_key']);
+        // ページをリロードして一覧を更新
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    } catch (AwsException $e) {
+        echo "削除失敗: " . $e->getMessage();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -93,6 +109,10 @@ if (isset($_GET['download'])) {
     <li>
         <?php echo htmlspecialchars($obj['Key']); ?>
         [<a href="?download=<?php echo urlencode($obj['Key']); ?>">ダウンロード</a>]
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="delete_key" value="<?php echo htmlspecialchars($obj['Key']); ?>">
+            <button type="submit">削除</button>
+        </form>
     </li>
 <?php endforeach; ?>
 </ul>

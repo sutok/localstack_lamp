@@ -12,3 +12,9 @@ export AWS_SECRET_ACCESS_KEY=test
 ```
 aws --endpoint-url=http://localhost:4566 s3 ls s3://sample-bucket/
 ```
+
+### 3. ファイルを削除
+
+```
+aws --endpoint-url=http://localhost:4566 s3 rm s3://sample-bucket/test.jpg
+```
