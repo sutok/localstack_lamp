@@ -27,7 +27,10 @@ RUN pecl install xdebug-3.2.2 && \
     echo "zend_extension=$(find /usr/lib64/php/modules/ -name xdebug.so)" > /etc/php.d/15-xdebug.ini && \
     echo "xdebug.mode=debug" >> /etc/php.d/15-xdebug.ini && \
     echo "xdebug.start_with_request=yes" >> /etc/php.d/15-xdebug.ini && \
-    echo "xdebug.client_host=host.docker.internal" >> /etc/php.d/15-xdebug.ini
+    echo "xdebug.client_host=host.docker.internal" >> /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.client_port=9003" >> /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.idekey=VSCODE" >> /etc/php.d/15-xdebug.ini && \
+    echo "xdebug.remote_handler = \"dbgp\"" >> /etc/php.d/15-xdebug.ini 
 
 # Composer インストール
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

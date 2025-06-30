@@ -1,5 +1,6 @@
 {
     "require": {
-        "aws/aws-sdk-php": "^3.348"
+        "aws/aws-sdk-php": "^3.348",
+        "guzzlehttp/guzzle": "^7.9"
     }
 }
